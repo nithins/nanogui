@@ -22,6 +22,28 @@ Graph::Graph(Widget *parent, const std::string &caption)
     mTextColor = Color(240, 192);
 }
 
+auto ColorMapCmp = [](const Graph::ColorMap::value_type &a, const Graph::ColorMap::value_type &b)->bool 
+{
+	return a.first < b.first;
+};
+
+void Graph::setColorMap(const ColorMap & colorMap)
+{
+	mColorMap = colorMap;
+
+	// Sort in decreasing order
+	std::sort(mColorMap.rbegin(), mColorMap.rend(), ColorMapCmp);
+
+	// Throw out values that are not >= 0
+	while (mColorMap.size() !=0 && mColorMap.back().first < 0.0) mColorMap.pop_back();
+
+	// Reverse to increasing order
+	std::reverse(mColorMap.begin(), mColorMap.end());
+
+	// Throw out values that are not <= 1
+	while (mColorMap.size() != 0 && mColorMap.back().first > 1.0) mColorMap.pop_back();
+}
+
 Vector2i Graph::preferredSize(NVGcontext *) const {
     return Vector2i(180, 45);
 }
@@ -29,28 +51,69 @@ Vector2i Graph::preferredSize(NVGcontext *) const {
 void Graph::draw(NVGcontext *ctx) {
     Widget::draw(ctx);
 
-    nvgBeginPath(ctx);
-    nvgRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y());
-    nvgFillColor(ctx, mBackgroundColor);
-    nvgFill(ctx);
+	nvgBeginPath(ctx);
+	nvgRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y());
+	nvgFillColor(ctx, mBackgroundColor);
+	nvgFill(ctx);
 
-    if (mValues.size() < 2)
-        return;
+	if (mValues.size() >= 2) {
 
-    nvgBeginPath(ctx);
-    nvgMoveTo(ctx, mPos.x(), mPos.y()+mSize.y());
-    for (size_t i = 0; i < (size_t) mValues.size(); i++) {
-        float value = mValues[i];
-        float vx = mPos.x() + i * mSize.x() / (float) (mValues.size() - 1);
-        float vy = mPos.y() + (1-value) * mSize.y();
-        nvgLineTo(ctx, vx, vy);
-    }
+		if (mColorMap.size() != 0) {
 
-    nvgLineTo(ctx, mPos.x() + mSize.x(), mPos.y() + mSize.y());
-    nvgStrokeColor(ctx, Color(100, 255));
-    nvgStroke(ctx);
-    nvgFillColor(ctx, mForegroundColor);
-    nvgFill(ctx);
+			float u = mValues[0];
+			float ux = mPos.x();
+			float uy = mPos.y() + (1 - u) * mSize.y();
+
+
+			for (size_t i = 1; i < (size_t)mValues.size(); i++) {
+
+				float v = mValues[i];
+				float vx = float(mPos.x()) + float(i * mSize.x()) / float(mValues.size() - 1);
+				float vy = mPos.y() + (1 - v) * mSize.y();
+
+				float s = (u + v) / 2;
+				size_t j = std::lower_bound(mColorMap.begin(), mColorMap.end(), 
+					std::make_pair(s,Color()), ColorMapCmp) - mColorMap.begin();
+
+				ColorMap::value_type cl = (j>0) ? (mColorMap[j - 1]) : (mColorMap.front());
+				ColorMap::value_type cu = (j<mColorMap.size()) ? (mColorMap[j]) : (mColorMap.back());
+
+				float m = (cl.first != cu.first) ? ((s - cl.first) / (cu.first - cl.first)) : (0.5);
+				auto c = nvgLerpRGBA(cl.second, cu.second, m);
+
+				nvgBeginPath(ctx);
+				nvgMoveTo(ctx, ux, mPos.y() + mSize.y());
+				nvgLineTo(ctx, ux, uy);
+				nvgLineTo(ctx, vx, vy);
+				nvgMoveTo(ctx, vx, mPos.y() + mSize.y());
+
+
+				nvgStrokeColor(ctx, c);
+				nvgStroke(ctx);
+				nvgFillColor(ctx, c);
+				nvgFill(ctx);
+
+				u = v; ux = vx; uy = vy;
+			}
+
+		}
+		else {
+			nvgBeginPath(ctx);
+			nvgMoveTo(ctx, mPos.x(), mPos.y() + mSize.y());
+			for (size_t i = 0; i < (size_t)mValues.size(); i++) {
+				float value = mValues[i];
+				float vx = mPos.x() + i * mSize.x() / (float)(mValues.size() - 1);
+				float vy = mPos.y() + (1 - value) * mSize.y();
+				nvgLineTo(ctx, vx, vy);
+			}
+
+			nvgLineTo(ctx, mPos.x() + mSize.x(), mPos.y() + mSize.y());
+			nvgStrokeColor(ctx, Color(100, 255));
+			nvgStroke(ctx);
+			nvgFillColor(ctx, mForegroundColor);
+			nvgFill(ctx);
+		}
+	}
 
     nvgFontFace(ctx, "sans");
 
