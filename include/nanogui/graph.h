@@ -23,6 +23,8 @@ NAMESPACE_BEGIN(nanogui)
  */
 class NANOGUI_EXPORT Graph : public Widget {
 public:
+	typedef std::vector<std::pair<float, Color>> ColorMap;
+
     Graph(Widget *parent, const std::string &caption = "Untitled");
 
     const std::string &caption() const { return mCaption; }
@@ -52,10 +54,18 @@ public:
 
     virtual void save(Serializer &s) const override;
     virtual bool load(Serializer &s) override;
+
+    const ColorMap &colorMap() const { return mColorMap; }
+    void setColorMap(const ColorMap &colorMap);
+
+    virtual Vector2i preferredSize(NVGcontext *ctx) const;
+    virtual void draw(NVGcontext *ctx);
+
 protected:
     std::string mCaption, mHeader, mFooter;
     Color mBackgroundColor, mForegroundColor, mTextColor;
     VectorXf mValues;
+	ColorMap mColorMap;
 };
 
 NAMESPACE_END(nanogui)

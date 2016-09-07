@@ -186,6 +186,18 @@ public:
         );
     }
 
+
+	/// Add a new data widget that exposes a raw variable in memory and calls changedCB when changed
+	template <typename Type> detail::FormWidget<Type> *
+		addVariable(const std::string &label, Type &value,
+			const std::function<void()> &changedCB,
+			bool editable = true) {
+		return addVariable<Type>(label,
+			[changedCB, &value](Type v) { if (value != v) { value = v;changedCB(); }},
+			[&value]() -> Type { return value; }, editable
+			);
+	}
+
     /// Add a button with a custom callback
     Button *addButton(const std::string &label, const std::function<void()> &cb) {
         Button *button = new Button(mWindow, label);
