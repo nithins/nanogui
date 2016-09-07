@@ -20,6 +20,7 @@
 #include <nanogui/combobox.h>
 #include <nanogui/colorpicker.h>
 #include <nanogui/layout.h>
+#include <nanogui/graph.h>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
@@ -221,6 +222,13 @@ public:
             mLayout->setAnchor(widget, AdvancedGridLayout::Anchor(3, mLayout->rowCount()-1));
         }
     }
+
+	/// Add a (optionally labeled) graph widget to the layout
+	nanogui::Graph * addGraphWidget(const std::string &title) {
+		nanogui::Graph * graph = new nanogui::Graph(window(), title);
+		addWidget("", graph);
+		return graph;
+	}
 
     /// Cause all widgets to re-synchronize with the underlying variable state
     void refresh() {

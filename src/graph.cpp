@@ -61,9 +61,7 @@ void Graph::draw(NVGcontext *ctx) {
 
 		if (mColorMap.size() != 0) {
 
-			float u = mValues[0];
 			float ux = mPos.x();
-			float uy = mPos.y() + (1 - u) * mSize.y();
 
 
 			for (size_t i = 1; i < (size_t)mValues.size(); i++) {
@@ -72,21 +70,20 @@ void Graph::draw(NVGcontext *ctx) {
 				float vx = float(mPos.x()) + float(i * mSize.x()) / float(mValues.size() - 1);
 				float vy = mPos.y() + (1 - v) * mSize.y();
 
-				float s = (u + v) / 2;
 				size_t j = std::lower_bound(mColorMap.begin(), mColorMap.end(), 
-					std::make_pair(s,Color()), ColorMapCmp) - mColorMap.begin();
+					std::make_pair(v,Color()), ColorMapCmp) - mColorMap.begin();
 
 				ColorMap::value_type cl = (j>0) ? (mColorMap[j - 1]) : (mColorMap.front());
 				ColorMap::value_type cu = (j<mColorMap.size()) ? (mColorMap[j]) : (mColorMap.back());
 
-				float m = (cl.first != cu.first) ? ((s - cl.first) / (cu.first - cl.first)) : (0.5);
+				float m = (cl.first != cu.first) ? ((v - cl.first) / (cu.first - cl.first)) : (0.5);
 				auto c = nvgLerpRGBA(cl.second, cu.second, m);
 
 				nvgBeginPath(ctx);
 				nvgMoveTo(ctx, ux, mPos.y() + mSize.y());
-				nvgLineTo(ctx, ux, uy);
+				nvgLineTo(ctx, ux, vy);
 				nvgLineTo(ctx, vx, vy);
-				nvgMoveTo(ctx, vx, mPos.y() + mSize.y());
+				nvgLineTo(ctx, vx, mPos.y() + mSize.y());
 
 
 				nvgStrokeColor(ctx, c);
@@ -94,7 +91,7 @@ void Graph::draw(NVGcontext *ctx) {
 				nvgFillColor(ctx, c);
 				nvgFill(ctx);
 
-				u = v; ux = vx; uy = vy;
+				ux = vx;
 			}
 
 		}
