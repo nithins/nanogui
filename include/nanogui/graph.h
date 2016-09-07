@@ -58,9 +58,6 @@ public:
     const ColorMap &colorMap() const { return mColorMap; }
     void setColorMap(const ColorMap &colorMap);
 
-    virtual Vector2i preferredSize(NVGcontext *ctx) const;
-    virtual void draw(NVGcontext *ctx);
-
 protected:
     std::string mCaption, mHeader, mFooter;
     Color mBackgroundColor, mForegroundColor, mTextColor;
