@@ -21,6 +21,7 @@
 #include <nanogui/colorpicker.h>
 #include <nanogui/layout.h>
 #include <nanogui/graph.h>
+#include <nanogui/livegraph.h>
 #include <cassert>
 
 NAMESPACE_BEGIN(nanogui)
@@ -226,6 +227,13 @@ public:
 	/// Add a (optionally labeled) graph widget to the layout
 	nanogui::Graph * addGraphWidget(const std::string &title) {
 		nanogui::Graph * graph = new nanogui::Graph(window(), title);
+		addWidget("", graph);
+		return graph;
+	}
+
+	/// Add a (optionally labeled) graph widget to the layout
+	nanogui::LiveGraph * addLiveGraphWidget(const std::string &caption = "Untitled", int bufSize = 1000, Vector2f range = Vector2f(0, 1)) {
+		nanogui::LiveGraph * graph = new nanogui::LiveGraph(window(),caption, bufSize,range);
 		addWidget("", graph);
 		return graph;
 	}
