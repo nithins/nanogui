@@ -76,7 +76,7 @@ protected:
     VectorXf mValues;
 	ColorMap mColorMap;
 	Vector2f mRange;
-	std::atomic<size_t> mCurWriteHead = 0;
+	std::atomic<size_t> mCurWriteHead;
 };
 
 NAMESPACE_END(nanogui)

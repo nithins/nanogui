@@ -17,7 +17,7 @@ BSD-style license that can be found in the LICENSE.txt file.
 NAMESPACE_BEGIN(nanogui)
 
 LiveGraph::LiveGraph(Widget *parent, const std::string &caption, int bufSize, Vector2f range )
-	: Widget(parent),mRange(range), mCaption(caption) {
+	: Widget(parent),mRange(range), mCaption(caption),mCurWriteHead(0) {
 	mValues = VectorXf::Zero(bufSize);
 	mBackgroundColor = Color(20, 128);
 	mForegroundColor = Color(255, 192, 0, 128);
@@ -105,9 +105,10 @@ void LiveGraph::draw(NVGcontext *ctx) {
 			nvgBeginPath(ctx);
 			nvgMoveTo(ctx, mPos.x(), mPos.y() + mSize.y());
 			for (size_t i = 0; i < (size_t)mValues.size(); i++) {
-				float value = mValues[i];
+				float v = mValues[i];
+				float nv = std::min(std::max((v - mRange[0])/(mRange[1] - mRange[0]),0.0f),1.0f);
 				float vx = mPos.x() + i * mSize.x() / (float)(mValues.size() - 1);
-				float vy = mPos.y() + (1 - value) * mSize.y();
+				float vy = mPos.y() + (1 - nv) * mSize.y();
 				nvgLineTo(ctx, vx, vy);
 			}
 
