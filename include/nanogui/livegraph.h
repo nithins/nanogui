@@ -57,7 +57,7 @@ public:
 
 	const Vector2f &range() const { return mRange; }
 	Vector2f &range() { return mRange; }
-	void setRange(const Vector2f &range) { mRange = range; }
+	void setRange(const Vector2f &range) { mRange = range; mFnZero = std::min(std::max(mFnZero, 0.0f), 1.0f); }
 
 
 
@@ -77,6 +77,7 @@ protected:
 	ColorMap mColorMap;
 	Vector2f mRange;
 	std::atomic<size_t> mCurWriteHead;
+	float mFnZero=0;
 };
 
 NAMESPACE_END(nanogui)

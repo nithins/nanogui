@@ -60,70 +60,67 @@ void LiveGraph::draw(NVGcontext *ctx) {
 
 	size_t curWriteHead = mCurWriteHead;
 
-	if (mValues.size() >= 2) {
+	std::function<NVGcolor(float)> lookupFn = [&](float)->NVGcolor {return mForegroundColor;};
 
-		if (mColorMap.size() != 0) {
+	if (mColorMap.size() != 0) 
+		lookupFn = [&](float v)->NVGcolor {
+		size_t j = std::lower_bound(mColorMap.begin(), mColorMap.end(),
+			std::make_pair(v, Color()), ColorMapCmp) - mColorMap.begin();
 
+		ColorMap::value_type cl = (j>0) ? (mColorMap[j - 1]) : (mColorMap.front());
+		ColorMap::value_type cu = (j<mColorMap.size()) ? (mColorMap[j]) : (mColorMap.back());
 
-			for (size_t i = 1; i < (size_t)mValues.size(); i++) {
+		float m = (cl.first != cu.first) ? ((v - cl.first) / (cu.first - cl.first)) : (0.5);
+		return nvgLerpRGBA(cl.second, cu.second, m);
+	};
 
-				if ((i - curWriteHead) < mValues.size() / 10 && i > curWriteHead) {
-					i += mValues.size() / 10 -1;
-					continue;
-				}
+	float nz = std::min(std::max((mFnZero - mRange[0]) / (mRange[1] - mRange[0]), 0.0f), 1.0f);
+	float uy = mPos.y() + (1 - nz) * mSize.y();
 
-				float v = mValues[i];
-				float nv = std::min(std::max((v - mRange[0])/(mRange[1] - mRange[0]),0.0f),1.0f);
-				float ux = float(mPos.x()) + float((i-1) * mSize.x()) / float(mValues.size() - 1);
-				float vx = float(mPos.x()) + float(i * mSize.x()) / float(mValues.size() - 1);
-				float vy = mPos.y() + (1 - nv) * mSize.y();
+	auto drawRange = [&](int b, int e)->void {
 
-				size_t j = std::lower_bound(mColorMap.begin(), mColorMap.end(),
-					std::make_pair(v, Color()), ColorMapCmp) - mColorMap.begin();
+		for (int i = b; i < e && i < mValues.size(); ++i) {
 
-				ColorMap::value_type cl = (j>0) ? (mColorMap[j - 1]) : (mColorMap.front());
-				ColorMap::value_type cu = (j<mColorMap.size()) ? (mColorMap[j]) : (mColorMap.back());
+			float v = mValues[i];
+			float nv = std::min(std::max((v - mRange[0]) / (mRange[1] - mRange[0]), 0.0f), 1.0f);
+			float ux = float(mPos.x()) + float((i - 1) * mSize.x()) / float(mValues.size() - 1);
+			float vx = float(mPos.x()) + float(i * mSize.x()) / float(mValues.size() - 1);
+			float vy = mPos.y() + (1 - nv) * mSize.y();
 
-				float m = (cl.first != cu.first) ? ((v - cl.first) / (cu.first - cl.first)) : (0.5);
-				auto c = nvgLerpRGBA(cl.second, cu.second, m);
+			auto c = lookupFn(v);
 
-				nvgBeginPath(ctx);
-				nvgMoveTo(ctx, ux, mPos.y() + mSize.y());
-				nvgLineTo(ctx, ux, vy);
-				nvgLineTo(ctx, vx, vy);
-				nvgLineTo(ctx, vx, mPos.y() + mSize.y());
-
-
-				//nvgStrokeColor(ctx, c);
-				//nvgStroke(ctx);
-				nvgFillColor(ctx, c);
-				nvgFill(ctx);
-			}
-
-		}
-		else {
 			nvgBeginPath(ctx);
-			nvgMoveTo(ctx, mPos.x(), mPos.y() + mSize.y());
-			for (size_t i = 0; i < (size_t)mValues.size(); i++) {
-				float v = mValues[i];
-				float nv = std::min(std::max((v - mRange[0])/(mRange[1] - mRange[0]),0.0f),1.0f);
-				float vx = mPos.x() + i * mSize.x() / (float)(mValues.size() - 1);
-				float vy = mPos.y() + (1 - nv) * mSize.y();
-				nvgLineTo(ctx, vx, vy);
-			}
+			nvgMoveTo(ctx, ux, uy);
+			nvgLineTo(ctx, ux, vy);
+			nvgLineTo(ctx, vx, vy);
+			nvgLineTo(ctx, vx, uy);
 
-			nvgLineTo(ctx, mPos.x() + mSize.x(), mPos.y() + mSize.y());
-			nvgStrokeColor(ctx, Color(100, 255));
-			nvgStroke(ctx);
-			nvgFillColor(ctx, mForegroundColor);
+
+			//nvgStrokeColor(ctx, c);
+			//nvgStroke(ctx);
+			nvgFillColor(ctx, c);
 			nvgFill(ctx);
-		}
-	}
 
+		}
+	};
+	
+
+	drawRange(1, curWriteHead);
+	drawRange(curWriteHead + mValues.size()/10, mValues.size());
+
+
+	// Vertical Red bar
 	nvgBeginPath(ctx);
-	nvgRect(ctx, mPos.x() + (float(mCurWriteHead)/float(mValues.size() - 1))*mSize.x() -2, mPos.y(), 4, mSize.y());
+	nvgRect(ctx, mPos.x() + (float(curWriteHead)/float(mValues.size() - 1))*mSize.x() -2, mPos.y(), 4, mSize.y());
 	nvgFillColor(ctx, Color(255,0,0,192));
 	nvgFill(ctx);
+
+	// Horizontal X axis
+	nvgBeginPath(ctx);
+	nvgRect(ctx, mPos.x(), uy, mSize.x(),1);
+	nvgFillColor(ctx, Color(192, 192));
+	nvgFill(ctx);
+
 
 
 	nvgFontFace(ctx, "sans");
