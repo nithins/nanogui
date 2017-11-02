@@ -93,10 +93,10 @@ public:
     void setCaption(const std::string &caption);
 
     /// Return the screen's background color
-    const Vector3f &background() const { return mBackground; }
+    const Color &background() const { return mBackground; }
 
     /// Set the screen's background color
-    void setBackground(const Vector3f &background) { mBackground = background; }
+    void setBackground(const Color &background) { mBackground = background; }
 
     /// Set the top-level window visibility (no effect on full-screen windows)
     void setVisible(bool visible);
@@ -123,7 +123,11 @@ public:
     virtual bool keyboardCharacterEvent(unsigned int codepoint);
 
     /// Window resize event handler
-    virtual bool resizeEvent(const Vector2i &) { return false; }
+    virtual bool resizeEvent(const Vector2i& size);
+
+    /// Set the resize callback
+    std::function<void(Vector2i)> resizeCallback() const { return mResizeCallback; }
+    void setResizeCallback(const std::function<void(Vector2i)> &callback) { mResizeCallback = callback; }
 
     /// Return the last observed mouse position value
     Vector2i mousePos() const { return mMousePos; }
@@ -194,10 +198,13 @@ protected:
     Widget *mDragWidget = nullptr;
     double mLastInteraction;
     bool mProcessEvents;
-    Vector3f mBackground;
+    Color mBackground;
     std::string mCaption;
     bool mShutdownGLFWOnDestruct;
     bool mFullscreen;
+    std::function<void(Vector2i)> mResizeCallback;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 NAMESPACE_END(nanogui)

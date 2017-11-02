@@ -20,6 +20,7 @@
 #include <nanogui/entypo.h>
 #include <nanogui/serializer/core.h>
 #include <regex>
+#include <iostream>
 
 NAMESPACE_BEGIN(nanogui)
 
@@ -153,7 +154,8 @@ void TextBox::draw(NVGcontext* ctx) {
         nvgFontSize(ctx, ((mFontSize < 0) ? mTheme->mButtonFontSize : mFontSize) * 1.2f);
 
         bool spinning = mMouseDownPos.x() != -1;
-        {
+
+        /* up button */ {
             bool hover = mMouseFocus && spinArea(mMousePos) == SpinArea::Top;
             nvgFillColor(ctx, (mEnabled && (hover || spinning)) ? mTheme->mTextColor : mTheme->mDisabledTextColor);
             auto icon = utf8(ENTYPO_ICON_CHEVRON_UP);
@@ -162,7 +164,8 @@ void TextBox::draw(NVGcontext* ctx) {
                              mPos.y() + mSize.y()/2.f - xSpacing/2.f);
             nvgText(ctx, iconPos.x(), iconPos.y(), icon.data(), nullptr);
         }
-        {
+
+        /* down button */ {
             bool hover = mMouseFocus && spinArea(mMousePos) == SpinArea::Bottom;
             nvgFillColor(ctx, (mEnabled && (hover || spinning)) ? mTheme->mTextColor : mTheme->mDisabledTextColor);
             auto icon = utf8(ENTYPO_ICON_CHEVRON_DOWN);
@@ -494,8 +497,17 @@ bool TextBox::keyboardCharacterEvent(unsigned int codepoint) {
 bool TextBox::checkFormat(const std::string &input, const std::string &format) {
     if (format.empty())
         return true;
-    std::regex regex(format);
-    return regex_match(input, regex);
+    try {
+        std::regex regex(format);
+        return regex_match(input, regex);
+    } catch (const std::regex_error &) {
+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+        std::cerr << "Warning: cannot validate text field due to lacking regular expression support. please compile with GCC >= 4.9" << std::endl;
+        return true;
+#else
+        throw;
+#endif
+    }
 }
 
 bool TextBox::copySelection() {

@@ -12,15 +12,13 @@ import nanogui
 from nanogui import *
 import time
 
-quit = False
-
 
 class TestApp(Screen):
     def __init__(self):
-        super(TestApp, self).__init__(Vector2i(190, 170), "NanoGUI Test")
+        super(TestApp, self).__init__((190, 170), "NanoGUI Test")
 
         window = Window(self, "Detached mode")
-        window.setPosition(Vector2i(15, 15))
+        window.setPosition((15, 15))
         window.setLayout(GroupLayout())
 
         Label(window, "Push buttons", "sans-bold")
@@ -33,8 +31,6 @@ class TestApp(Screen):
         b = Button(window, "Quit")
 
         def cb2():
-            global quit
-            quit = True
             self.setVisible(False)
         b.setCallback(cb2)
 
@@ -54,7 +50,7 @@ if __name__ == "__main__":
     for i in range(10):
         print(i)
         time.sleep(1)
-        if quit:
+        if not nanogui.active():
             break
 
     h.join()

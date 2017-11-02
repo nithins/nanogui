@@ -63,6 +63,8 @@ protected:
     Color mBackgroundColor, mForegroundColor, mTextColor;
     VectorXf mValues;
 	ColorMap mColorMap;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 NAMESPACE_END(nanogui)
