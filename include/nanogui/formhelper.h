@@ -188,6 +188,13 @@ public:
         );
     }
 
+	/// Add a new data widget that exposes a non editable value
+	template <typename Type> detail::FormWidget<Type> *
+		addVariable(const std::string &label, const std::function<Type()> &getter) {
+		return addVariable<Type>(label,[&](const Type & v) {},getter,false);
+	}
+
+
 
 	/// Add a new data widget that exposes a raw variable in memory and calls changedCB when changed
 	template <typename Type> detail::FormWidget<Type> *
