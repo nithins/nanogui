@@ -162,14 +162,14 @@ public:
             if (value != current)
                 widget->setValue(value);
         };
-        refresh();
+        widget->setRefresh(refresh);
         widget->setCallback(setter);
         widget->setEditable(editable);
         widget->setFontSize(mWidgetFontSize);
         Vector2i fs = widget->fixedSize();
         widget->setFixedSize(Vector2i(fs.x() != 0 ? fs.x() : mFixedSize.x(),
                                       fs.y() != 0 ? fs.y() : mFixedSize.y()));
-        mRefreshCallbacks.push_back(refresh);
+        //mRefreshCallbacks.push_back(refresh);
         if (mLayout->rowCount() > 0)
             mLayout->appendRow(mVariableSpacing);
         mLayout->appendRow(0);
@@ -308,6 +308,20 @@ public:
     void setEditable(bool e) { setEnabled(e); }
     bool value() const { return checked(); }
 public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); CheckBox::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
+    
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
@@ -321,6 +335,19 @@ public:
     }
     void setEditable(bool e) { setEnabled(e); }
 public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); ComboBox::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
@@ -328,12 +355,39 @@ template <typename T> class FormWidget<T, typename std::is_integral<T>::type> : 
 public:
     FormWidget(Widget *p) : IntBox<T>(p) { this->setAlignment(TextBox::Alignment::Right); }
 public:
+public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); IntBox<T>::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 template <typename T> class FormWidget<T, typename std::is_floating_point<T>::type> : public FloatBox<T> {
 public:
     FormWidget(Widget *p) : FloatBox<T>(p) { this->setAlignment(TextBox::Alignment::Right); }
+public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); FloatBox<T>::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -345,6 +399,19 @@ public:
         TextBox::setCallback([cb](const std::string &str) { cb(str); return true; });
     }
 public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); TextBox::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
@@ -354,6 +421,20 @@ public:
     void setValue(const Color &c) { setColor(c); }
     void setEditable(bool e) { setEnabled(e); }
     Color value() const { return color(); }
+
+public:
+    /// Set the refresh callback
+    std::function<void()> refresh() const { return mRefresh; }
+    void setRefresh(const std::function<void()> &refresh) 
+    { mRefresh = refresh; }
+    
+    // Call refresh before draw
+    virtual void draw(NVGcontext* ctx) override 
+    { if (mRefresh) mRefresh(); ColorPicker::draw(ctx); }
+    
+protected:
+    // The Refresh Callback
+    std::function<void()> mRefresh;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
