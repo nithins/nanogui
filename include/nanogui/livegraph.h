@@ -62,6 +62,7 @@ public:
 
 
     virtual Vector2i preferredSize(NVGcontext *ctx) const override;
+    void setPreferredSize(const Vector2i &s) {mPreferredSize = s;}
     virtual void draw(NVGcontext *ctx) override;
 
     virtual void save(Serializer &s) const override;
@@ -76,8 +77,9 @@ protected:
     VectorXf mValues;
 	ColorMap mColorMap;
 	Vector2f mRange;
-	std::atomic<size_t> mCurWriteHead;
+	std::atomic<size_t> mCurWriteHead = { 0 };
 	float mFnZero=0;
+    Vector2i mPreferredSize = {180,45};
 };
 
 NAMESPACE_END(nanogui)

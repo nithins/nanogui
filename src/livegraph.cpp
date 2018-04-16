@@ -47,7 +47,7 @@ void LiveGraph::setColorMap(const ColorMap & colorMap)
 }
 
 Vector2i LiveGraph::preferredSize(NVGcontext *) const {
-	return Vector2i(180, 45);
+    return mPreferredSize;
 }
 
 void LiveGraph::draw(NVGcontext *ctx) {
